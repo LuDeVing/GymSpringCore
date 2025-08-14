@@ -2,11 +2,10 @@ package org.example;
 
 import org.example.configuration.AppConfig;
 import org.example.facade.GymFacade;
-import org.example.util.DataLoad;
+import org.example.model.Trainee;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.io.IOException;
 import java.time.LocalDate;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -19,11 +18,24 @@ public class Main {
 
         LocalDate date = LocalDate.of(2000, 2, 3);
 
-        gymFacade.createTrainee("John", "Doe", true, date, "address");
+        Trainee trainee = new Trainee();
+        trainee.setFirstName("John");
+        trainee.setLastName("Doe");
+        trainee.setActive(true);
+
+        gymFacade.createTrainee(trainee, date, "address");
 
         System.out.println("All trainees:");
-        System.out.println(gymFacade.selectTrainee(1L).getUsername());
-        System.out.println(gymFacade.selectTrainee(2L).getUsername());
+        System.out.println(gymFacade.selectTrainee(1L).get().getUsername());
+
+        Trainee trainee2 = new Trainee();
+        trainee2.setFirstName("Jane");
+        trainee2.setLastName("Smith");
+        trainee2.setActive(true);
+        gymFacade.createTrainee(trainee2, date, "address 2");
+
+        System.out.println(gymFacade.selectTrainee(2L).get().getUsername());
 
     }
+
 }

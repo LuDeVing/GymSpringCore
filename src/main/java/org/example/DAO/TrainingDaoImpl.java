@@ -1,5 +1,6 @@
 package org.example.DAO;
 
+import org.example.model.Trainee;
 import org.example.model.Training;
 import org.example.storage.StorageSystem;
 import org.slf4j.Logger;
@@ -7,50 +8,42 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Predicate;
 
 @Repository
-public class TrainingDaoImpl implements TrainingDao {
-
-    private final Map<Long, Training> trainings;
-    private static final Logger logger = LoggerFactory.getLogger(TrainingDaoImpl.class);
+public class TrainingDaoImpl implements GenericDao<Training> {
 
     @Autowired
-    public TrainingDaoImpl(StorageSystem storage) {
-        this.trainings = storage.getTrainings();
+    public TrainingDaoImpl(StorageSystem<Training> trainings) {
+        this.trainings = trainings;
     }
 
     @Override
     public void create(Training training) {
         trainings.put(training.getTrainingId(), training);
-        logger.info("Training with ID {} created.", training.getTrainingId());
     }
 
     @Override
-    public Training select(Long id) {
-        Training training = trainings.get(id);
-        if (training == null) {
-            logger.warn("Training ID {} not found.", id);
-        } else {
-            logger.info("Training ID {} retrieved.", id);
-        }
-        return training;
+    public Optional<Training> select(Long id) {
+        return trainings.findById(id);
+    }
+
+    @Override
+    public void update(Training entity) {
+        trainings.update(entity.getTrainingId(), entity);
     }
 
     @Override
     public void delete(Long id) {
-        if (trainings.containsKey(id)) {
-            trainings.remove(id);
-            logger.info("Training with ID {} deleted.", id);
-        } else {
-            logger.warn("Training ID {} not found. Delete skipped.", id);
-        }
+        trainings.delete(id);
     }
 
-    public List<Training> findAll() {
-        logger.info("Retrieving all trainings. Total count: {}", trainings.size());
-        return new ArrayList<>(trainings.values());
+    @Override
+    public boolean existsMatching(Predicate<Training> predicate) {
+        return trainings.existsMatching(predicate);
     }
+
+    private final StorageSystem<Training> trainings;
+
 }

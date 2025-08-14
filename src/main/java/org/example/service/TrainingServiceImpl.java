@@ -1,36 +1,33 @@
 package org.example.service;
 
-import org.example.DAO.TrainingDao;
+import org.example.DAO.GenericDao;
+import org.example.model.Trainee;
 import org.example.model.Training;
 import org.example.model.TrainingType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 public class TrainingServiceImpl implements TrainingService {
 
-    private TrainingDao trainingDao;
-
     @Autowired
-    public void setTrainingDao(TrainingDao trainingDao) {
+    public void setTrainingDao(GenericDao<Training> trainingDao) {
         this.trainingDao = trainingDao;
     }
 
     @Override
-    public void create(Long traineeId, Long trainerId, String trainingName,
-                       String trainingTypeName, LocalDate trainingDate, int trainingDuration) {
-
-        TrainingType trainingType = new TrainingType(trainingTypeName);
-        Training training = new Training(traineeId, trainerId, trainingName, trainingType, trainingDate, trainingDuration);
-
+    public void create(Training training) {
         trainingDao.create(training);
     }
 
     @Override
-    public Training select(Long trainingId) {
+    public Optional<Training> select(Long trainingId) {
         return trainingDao.select(trainingId);
     }
+
+    private GenericDao<Training> trainingDao;
 
 }

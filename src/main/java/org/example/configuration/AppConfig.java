@@ -5,15 +5,14 @@ import org.example.model.Trainee;
 import org.example.model.Trainer;
 import org.example.model.Training;
 import org.example.service.*;
-import org.example.util.UserPasswordGenerator;
-import org.example.util.UserPasswordGeneratorImpl;
+import org.example.storage.MapStorage;
+import org.example.storage.StorageSystem;
+import org.example.util.UserNameCalculatorAndPasswordGenerator;
+import org.example.util.UserNameCalculatorAndPasswordGeneratorImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 @org.springframework.context.annotation.Configuration
@@ -22,32 +21,32 @@ import java.util.Map;
 public class AppConfig {
 
     @Bean
+    public StorageSystem<Trainee> traineeStorage() {
+        return new MapStorage<>();
+    }
+
+    @Bean
+    public StorageSystem<Trainer> trainerStorage() {
+        return new MapStorage<>();
+    }
+
+    @Bean
+    public StorageSystem<Training> trainingStorage() {
+        return new MapStorage<>();
+    }
+
+    @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
     @Bean
-    public Map<Long, Trainee> getTraineeMap(){
-        return new HashMap<>();
+    public UserNameCalculatorAndPasswordGenerator getUserPasswordGenerator(){
+        return new UserNameCalculatorAndPasswordGeneratorImpl();
     }
 
     @Bean
-    public Map<Long, Trainer> getTrainerMap(){
-        return new HashMap<>();
-    }
-
-    @Bean
-    public Map<Long, Training> getTrainingMap(){
-        return new HashMap<>();
-    }
-
-    @Bean
-    public UserPasswordGenerator getUserPasswordGenerator(){
-        return new UserPasswordGeneratorImpl();
-    }
-
-    @Bean
-    public TraineeService traineeService(TraineeDao traineeDao, UserPasswordGenerator userPasswordGenerator) {
+    public TraineeService traineeService(GenericDao<Trainee> traineeDao, UserNameCalculatorAndPasswordGenerator userPasswordGenerator) {
         TraineeServiceImpl service = new TraineeServiceImpl();
         service.setTraineeDao(traineeDao);
         service.setUserPasswordGenerator(userPasswordGenerator);
@@ -55,7 +54,7 @@ public class AppConfig {
     }
 
     @Bean
-    public TrainerService trainerService(TrainerDao trainerDao, UserPasswordGenerator userPasswordGenerator) {
+    public TrainerService trainerService(GenericDao<Trainer> trainerDao, UserNameCalculatorAndPasswordGenerator userPasswordGenerator) {
         TrainerServiceImpl service = new TrainerServiceImpl();
         service.setTrainerDao(trainerDao);
         service.setUserPasswordGenerator(userPasswordGenerator);
@@ -63,7 +62,7 @@ public class AppConfig {
     }
 
     @Bean
-    public TrainingService trainingService(TrainingDao trainingDao) {
+    public TrainingService trainingService(GenericDao<Training> trainingDao) {
         TrainingServiceImpl service = new TrainingServiceImpl();
         service.setTrainingDao(trainingDao);
         return service;

@@ -3,10 +3,10 @@ package org.example.service;
 import org.example.model.Training;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 public interface TrainingService {
-    void create(Long traineeId, Long trainerId, String trainingName,
-                String trainingTypeName, LocalDate trainingDate, int trainingDuration);
+    void create(Training training);
 
-    Training select(Long trainingId);
+    Optional<Training> select(Long trainingId);
 }

@@ -1,96 +1,72 @@
 package org.example.service;
 
 import junit.framework.TestCase;
-import org.example.DAO.TraineeDao;
+import org.example.DAO.GenericDao;
 import org.example.DAO.TraineeDaoImpl;
-import org.example.DAO.TrainingDao;
-import org.example.DAO.TrainingDaoImpl;
-import org.example.model.Trainee;
-import org.example.model.Trainer;
-import org.example.model.Training;
-import org.example.model.TrainingType;
+import org.example.model.*;
+import org.example.storage.MapStorage;
 import org.example.storage.StorageSystem;
-import org.example.util.UserPasswordGenerator;
-import org.example.util.UserPasswordGeneratorImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.example.util.UserNameCalculatorAndPasswordGeneratorImpl;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 
 public class ServiceImplTest extends TestCase {
 
-    private TraineeDao traineeDao;
-    private TrainingDao trainingDao;
-    private UserPasswordGenerator userPasswordGenerator;
 
-    private TraineeServiceImpl traineeService;
-    private TrainingServiceImpl trainingService;
+    TraineeServiceImpl traineeService;
 
-    private Map<Long, Trainee> traineeMap;
-    private Map<Long, Trainer> trainerMap;
-    private Map<Long, Training> trainingMap;
+    @Override
+    protected void setUp() {
 
+        StorageSystem<Trainee> traineeStorageSystem = new MapStorage<>();
 
-    @BeforeEach
-    public void setUp() {
-
-        traineeMap = new HashMap<>();
-        trainerMap = new HashMap<>();
-        trainingMap = new HashMap<>();
-
-        StorageSystem storageSystem = new StorageSystem(trainerMap, traineeMap, trainingMap);
-
-        traineeDao = new TraineeDaoImpl(storageSystem);
-        trainingDao = new TrainingDaoImpl(storageSystem);
-        userPasswordGenerator = new UserPasswordGeneratorImpl();
+        GenericDao<Trainee> trainees = new TraineeDaoImpl(traineeStorageSystem);
 
         traineeService = new TraineeServiceImpl();
-        traineeService.setTraineeDao(traineeDao);
-        traineeService.setTrainingDao(trainingDao);
-        traineeService.setUserPasswordGenerator(userPasswordGenerator);
+        traineeService.setTraineeDao(trainees);
+        traineeService.setUserPasswordGenerator(new UserNameCalculatorAndPasswordGeneratorImpl());
 
-        trainingService = new TrainingServiceImpl();
-        trainingService.setTrainingDao(trainingDao);
+        User user1 = new User("Name", "Gvari", "", "", true);
+        User user2 = new User("Name", "Gvari", "", "", true);
+        User user3 = new User("Name", "Gvari", "", "", true);
+        User user4 = new User("Name", "Gvari", "", "", true);
+        User user5 = new User("Name", "Gvari", "", "", true);
 
-    }
-
-    @Test
-    public void testCreateGeneratesUniqueUsernameAndPassword() {
-
-        traineeService.create("Alice", "Wonderlandson", true, LocalDate.of(1992, 3, 3), "addr1");
-
-        Trainee trainee = traineeService.select(1L);
-
-        assertTrue(trainee.getUsername().toLowerCase().contains("alice"));
-        assertTrue(trainee.getUsername().toLowerCase().contains("wonderlandson"));
-        assertTrue(trainee.isActive());
-        assertEquals(10, trainee.getPassword().length());
-
-        traineeService.create("Alice", "Wonderlandson", true, LocalDate.of(1995, 3, 3), "addr2");
-        assertTrue(traineeService.select(2L).getUsername().endsWith("1"));
-
-        traineeService.create("Alice", "Wonderlandson", true, LocalDate.of(1999, 3, 3), "addr3");
-        assertTrue(traineeService.select(3L).getUsername().endsWith("2"));
+        traineeService.create(user1, LocalDate.of(1990, 1, 1), "Address 1");
+        traineeService.create(user2, LocalDate.of(1990, 1, 1), "Address 2");
+        traineeService.create(user3, LocalDate.of(1990, 1, 1), "Address 3");
+        traineeService.create(user4, LocalDate.of(1990, 1, 1), "Address 4");
+        traineeService.create(user5, LocalDate.of(1990, 1, 1), "Address 5");
 
     }
 
-    @Test
-    public void testDeleteAlsoDeletesTrainings() {
+    public void testIdGeneration() {
 
-        Long traineeId = 1L;
+        User test1 = new User("Name", "Gvari", "", "", true);
+        User test2 = new User("Name", "Gvari", "", "", true);
 
-        LocalDate date = LocalDate.now();
+        traineeService.create(test1, LocalDate.of(1990, 1, 1), "Address 4");
+        traineeService.create(test2, LocalDate.of(1990, 1, 1), "Address 5");
 
-        trainingService.create(traineeId, 1L, "Cardio Session", "CARDIO", date, 60);
-        trainingService.create(traineeId, 2L, "Strength Session", "STRENGTH", date, 45);
+        assertTrue(traineeService.select(6L).isPresent());
+        assertTrue(traineeService.select(7L).isPresent());
 
-        traineeService.delete(traineeId);
+    }
 
-        assertNull(trainingService.select(Training.calculateId(traineeId, 1L, date, new TrainingType("CARDIO"))));
-        assertNull(trainingService.select(Training.calculateId(traineeId, 2L, date, new TrainingType("STRENGTH"))));
+    public void testGeneratesUserNameAndPassword() {
+
+        assert(traineeService.select(1L).isPresent());
+        assert(traineeService.select(2L).isPresent());
+        assert(traineeService.select(3L).isPresent());
+        assert(traineeService.select(4L).isPresent());
+        assert(traineeService.select(5L).isPresent());
+
+        assertEquals("Name.Gvari", traineeService.select(1L).get().getUsername());
+        assertEquals("Name.Gvari1", traineeService.select(2L).get().getUsername());
+        assertEquals("Name.Gvari2", traineeService.select(3L).get().getUsername());
+        assertEquals("Name.Gvari3", traineeService.select(4L).get().getUsername());
+        assertEquals("Name.Gvari4", traineeService.select(5L).get().getUsername());
 
     }
 

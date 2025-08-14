@@ -64,7 +64,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JUnit 5 (Jupiter API + Engine) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -78,13 +77,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Optional: Vintage Engine to run JUnit 4 tests in JUnit 5 -->
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>5.10.2</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

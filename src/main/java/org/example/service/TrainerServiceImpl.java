@@ -1,49 +1,45 @@
 package org.example.service;
 
-import org.example.DAO.TrainerDao;
+import org.example.DAO.GenericDao;
+import org.example.model.Trainee;
 import org.example.model.Trainer;
 import org.example.model.User;
-import org.example.util.UserPasswordGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.example.util.UserNameCalculatorAndPasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TrainerServiceImpl implements TrainerService {
 
-    private TrainerDao trainerDao;
-    private UserPasswordGenerator userPasswordGenerator;
-    private long currentId = 0;
-
     @Autowired
-    public void setTrainerDao(TrainerDao trainerDao) {
+    public void setTrainerDao(GenericDao<Trainer> trainerDao) {
         this.trainerDao = trainerDao;
     }
 
     @Autowired
-    public void setUserPasswordGenerator(UserPasswordGenerator userPasswordGenerator) {
+    public void setUserPasswordGenerator(UserNameCalculatorAndPasswordGenerator userPasswordGenerator) {
         this.userPasswordGenerator = userPasswordGenerator;
     }
 
     @Override
-    public void create(String firstName, String lastName, boolean isActive, String specialization) {
+    public void create(User user, String specialization) {
 
-        List<String> allUserNames = trainerDao.findAll().stream().map(User::getUsername).toList();
-
-        String userName = userPasswordGenerator.getUserName(firstName, lastName, allUserNames);
+        String userName = userPasswordGenerator.getUserName(user.getFirstName(), user.getLastName(), trainerDao);
         String password = userPasswordGenerator.generateRandomPassword();
 
-        Trainer trainer = new Trainer(++currentId, firstName, lastName, userName, password, isActive, specialization);
+        Trainer trainer = new Trainer(++currentId, user.getFirstName(), user.getLastName(), userName, password,
+                user.isActive(), specialization);
 
         trainerDao.create(trainer);
+
     }
 
     @Override
-    public Trainer select(Long id) {
+    public Optional<Trainer> select(Long id) {
         return trainerDao.select(id);
     }
 
@@ -51,4 +47,9 @@ public class TrainerServiceImpl implements TrainerService {
     public void update(Trainer trainer) {
         trainerDao.update(trainer);
     }
+
+    private GenericDao<Trainer> trainerDao;
+    private UserNameCalculatorAndPasswordGenerator userPasswordGenerator;
+    private long currentId = 0;
+
 }

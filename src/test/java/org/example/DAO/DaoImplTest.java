@@ -5,78 +5,128 @@ import org.example.model.Trainee;
 import org.example.model.Trainer;
 import org.example.model.Training;
 import org.example.model.TrainingType;
+import org.example.storage.MapStorage;
 import org.example.storage.StorageSystem;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+
 
 public class DaoImplTest extends TestCase {
 
-    private TraineeDaoImpl traineeDao;
-    private TrainerDaoImpl trainerDao;
-    private TrainingDaoImpl trainingDao;
+    private GenericDao<Trainee> trainees;
+    private GenericDao<Trainer> trainers;
+    private GenericDao<Training> trainings;
 
-    private Map<Long, Trainee> traineeMap;
-    private Map<Long, Trainer> trainerMap;
-    private Map<Long, Training> trainingMap;
+    private Training training1;
 
-    @BeforeEach
-    public void setUp() {
-        traineeMap = new HashMap<>();
-        trainerMap = new HashMap<>();
-        trainingMap = new HashMap<>();
+    private Trainer tr1;
 
-        StorageSystem storageSystem = new StorageSystem(trainerMap, traineeMap, trainingMap);
+    private Trainee t1;
 
-        traineeDao = new TraineeDaoImpl(storageSystem);
-        trainerDao = new TrainerDaoImpl(storageSystem);
-        trainingDao = new TrainingDaoImpl(storageSystem);
+    @Override
+    protected void setUp() {
+
+        StorageSystem<Trainee> traineeStorageSystem = new MapStorage<>();
+        StorageSystem<Trainer> trainerStorageSystem = new MapStorage<>();
+        StorageSystem<Training> trainingStorageSystem = new MapStorage<>();
+
+        trainees = new TraineeDaoImpl(traineeStorageSystem);
+        trainers = new TrainerDaoImpl(trainerStorageSystem);
+        trainings = new TrainingDaoImpl(trainingStorageSystem);
+
+        t1 = new Trainee(
+                1L, "John", "Doe", "jdoe", "pass123",
+                true, LocalDate.of(1990, 1, 1), "Address 1"
+        );
+        Trainee t2 = new Trainee(
+                2L, "Jane", "jameson", "jjameson", "pass456",
+                true, LocalDate.of(1992, 5, 10), "Address 2"
+        );
+        trainees.create(t1);
+        trainees.create(t2);
+
+        tr1 = new Trainer(
+                1L, "Mike", "Trainer", "mtrainer", "pass111",
+                true, "Yoga"
+        );
+        Trainer tr2 = new Trainer(
+                2L, "Sara", "Coach", "scoach", "pass222",
+                true, "Pilates"
+        );
+        trainers.create(tr1);
+        trainers.create(tr2);
+
+        training1 = new Training(
+                1L, 1L, "Morning Yoga",
+                new TrainingType("Yoga"),
+                LocalDate.of(2023, 1, 1), 60
+        );
+        Training training2 = new Training(
+                2L, 2L, "Evening Pilates",
+                new TrainingType("Pilates"),
+                LocalDate.of(2023, 2, 1), 45
+        );
+        trainings.create(training1);
+        trainings.create(training2);
     }
 
 
-    @Test
-    public void testTraineeDao() {
-        Trainee trainee = new Trainee(1L, "John", "Johnson", "jonhUser",
-                "password", true, LocalDate.of(1990, 1, 1), "123 John St");
-
-        traineeDao.create(trainee);
-        assertEquals("John", traineeDao.select(1L).getFirstName());
-        trainee.setFirstName("Johnny");
-        traineeDao.update(trainee);
-
-        assertEquals("Johnny", traineeDao.select(1L).getFirstName());
-        assertTrue(traineeDao.findAll().contains(trainee));
-
-        traineeDao.delete(1L);
-        assertNull(traineeDao.select(1L));
+    public void testTraineeDaoUserName() {
+        assertTrue(trainees.select(2L).isPresent());
+        assertEquals("jjameson", trainees.select(2L).get().getUsername());
     }
 
-    @Test
-    public void testTrainerDao() {
-        Trainer trainer = new Trainer(2L, "Alice", "Wonderlandson", "aliceUser",
-                "pass123", true, "Yoga");
-
-        trainerDao.create(trainer);
-        assertEquals("Alice", trainerDao.select(2L).getFirstName());
-
-        trainer.setSpecialization("Pilates");
-        trainerDao.update(trainer);
-        assertEquals("Pilates", trainerDao.select(2L).getSpecialization());
-
+    public void testTrainerDaoUserName() {
+        assertTrue(trainers.select(2L).isPresent());
+        assertEquals("scoach", trainers.select(2L).get().getUsername());
     }
 
-    @Test
     public void testTrainingDao() {
+        assertTrue(trainings.select(training1.getTrainingId()).isPresent());
+        assertEquals(60, trainings.select(training1.getTrainingId()).get().getTrainingDuration());
+    }
 
-        Training training = new Training(1L, 2L, "Morning Workout",
-                new TrainingType("Morning type training"), LocalDate.now(), 60);
+    public void testUpdateTrainee() {
+        t1.setUsername("johnny");
+        trainees.update(t1);
 
-        trainingDao.create(training);
-        assertEquals("Morning Workout", trainingDao.select(training.getTrainingId()).getTrainingName());
+        assert(trainees.select(1L).isPresent());
 
+        assertEquals("johnny", trainees.select(1L).get().getUsername());
+    }
+
+    public void testUpdateTrainer() {
+        tr1.setUsername("mikeT");
+        trainers.update(tr1);
+
+        assert(trainers.select(1L).isPresent());
+
+
+        assertEquals("mikeT", trainers.select(1L).get().getUsername());
+    }
+
+    public void testUpdateTraining() {
+        training1.setTrainingDuration(75);
+        trainings.update(training1);
+
+        assert(trainings.select(training1.getTrainingId()).isPresent());
+
+        assertEquals(75, trainings.select(training1.getTrainingId()).get().getTrainingDuration());
+    }
+
+    public void testDeleteTrainee() {
+        trainees.delete(1L);
+        assertFalse(trainees.select(1L).isPresent());
+    }
+
+    public void testDeleteTrainer() {
+        trainers.delete(1L);
+        assertFalse(trainers.select(1L).isPresent());
+    }
+
+    public void testDeleteTraining() {
+        trainings.delete(training1.getTrainingId());
+        assertFalse(trainings.select(training1.getTrainingId()).isPresent());
     }
 
 }

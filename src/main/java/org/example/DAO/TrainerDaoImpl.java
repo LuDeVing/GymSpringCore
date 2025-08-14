@@ -1,62 +1,50 @@
 package org.example.DAO;
 
+import org.example.model.Trainee;
 import org.example.model.Trainer;
+import org.example.storage.MapStorage;
 import org.example.storage.StorageSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Predicate;
 
 @Repository
-public class TrainerDaoImpl implements TrainerDao {
-
-    private final Map<Long, Trainer> trainers;
-    private static final Logger logger = LoggerFactory.getLogger(TrainerDaoImpl.class);
+public class TrainerDaoImpl implements GenericDao<Trainer> {
 
     @Autowired
-    public TrainerDaoImpl(StorageSystem storage){
-        trainers = storage.getTrainers();
+    public TrainerDaoImpl(StorageSystem<Trainer> trainers) {
+        this.trainers = trainers;
     }
 
     @Override
     public void create(Trainer trainer) {
-        if (!trainers.containsKey(trainer.getUserId())) {
-            trainers.put(trainer.getUserId(), trainer);
-            logger.info("Trainer with ID {} created.", trainer.getUserId());
-        } else {
-            logger.warn("Trainer with ID {} already exists. Creation skipped.", trainer.getUserId());
-        }
+        trainers.put(trainer.getUserId(), trainer);
     }
 
     @Override
-    public Trainer select(Long Id) {
-        Trainer trainer = trainers.get(Id);
-        if (trainer == null) {
-            logger.warn("Trainer ID {} not found.", Id);
-        } else {
-            logger.info("Trainer ID {} retrieved.", Id);
-        }
-        return trainer;
+    public Optional<Trainer> select(Long id) {
+        return trainers.findById(id);
     }
 
     @Override
     public void update(Trainer trainer) {
-        if (trainers.containsKey(trainer.getUserId())) {
-            trainers.put(trainer.getUserId(), trainer);
-            logger.info("Trainer with ID {} updated.", trainer.getUserId());
-        } else {
-            logger.warn("Trainer ID {} does not exist. Update skipped.", trainer.getUserId());
-        }
+        trainers.update(trainer.getUserId(), trainer);
     }
 
     @Override
-    public List<Trainer> findAll() {
-        logger.info("Retrieving all trainers. Total count: {}", trainers.size());
-        return new ArrayList<>(trainers.values());
+    public void delete(Long id) {
+        trainers.delete(id);
     }
+
+    @Override
+    public boolean existsMatching(Predicate<Trainer> predicate) {
+        return trainers.existsMatching(predicate);
+    }
+
+    private final StorageSystem<Trainer> trainers;
 
 }

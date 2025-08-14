@@ -1,13 +1,14 @@
 package org.example.service;
 
 import org.example.model.Trainee;
+import org.example.model.User;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 public interface TraineeService {
-    void create(String firstName, String lastName, boolean isActive,
-                LocalDate dateOfBirth, String address);
-    Trainee select(Long Id);
+    void create(User user, LocalDate date, String address);
+    Optional<Trainee> select(Long Id);
     void update(Trainee trainee);
     void delete(Long Id);
 }

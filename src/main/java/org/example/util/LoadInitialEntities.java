@@ -7,31 +7,22 @@ import org.example.facade.GymFacade;
 import org.example.model.Trainee;
 import org.example.model.Trainer;
 import org.example.model.Training;
+import org.example.model.TrainingType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 @Component
-public class DataLoad {
-
-    private final GymFacade gym;
-
-    @Value("${storage.file}")
-    private String storagePath;
-
-    private static final Logger logger = LoggerFactory.getLogger(DataLoad.class);
-
+public class LoadInitialEntities {
 
     @Autowired
-    public DataLoad(GymFacade gym){
+    public LoadInitialEntities(GymFacade gym){
         this.gym = gym;
     }
 
@@ -47,7 +38,6 @@ public class DataLoad {
                 return;
             }
 
-            // Check if path starts with "classpath:" prefix
             if (storagePath.startsWith("classpath:")) {
                 String path = storagePath.substring("classpath:".length());
                 is = getClass().getClassLoader().getResourceAsStream(path);
@@ -56,7 +46,6 @@ public class DataLoad {
                     return;
                 }
             } else {
-                // Otherwise treat as file system path
                 is = new java.io.FileInputStream(storagePath);
             }
 
@@ -65,21 +54,22 @@ public class DataLoad {
 
             if (root.has("trainers")) {
                 for (JsonNode t : root.get("trainers")) {
-                    gym.createTrainer(
-                            t.path("firstName").asText(""),
-                            t.path("lastName").asText(""),
-                            t.path("active").asBoolean(true),
-                            t.path("specialization").asText("")
-                    );
+                    Trainer trainer = new Trainer();
+                    trainer.setFirstName(t.path("firstName").asText(""));
+                    trainer.setLastName(t.path("lastName").asText(""));
+                    trainer.setActive(t.path("active").asBoolean(true));
+                    gym.createTrainer(trainer, t.path("specialization").asText(""));
                 }
             }
 
             if (root.has("trainees")) {
                 for (JsonNode t : root.get("trainees")) {
+                    Trainee trainee = new Trainee();
+                    trainee.setFirstName(t.path("firstName").asText(""));
+                    trainee.setLastName(t.path("lastName").asText(""));
+                    trainee.setActive(t.path("active").asBoolean(false));
                     gym.createTrainee(
-                            t.path("firstName").asText(""),
-                            t.path("lastName").asText(""),
-                            t.path("active").asBoolean(false),
+                            trainee,
                             java.time.LocalDate.parse(t.path("dateOfBirth").asText("1970-01-01")),
                             t.path("address").asText("")
                     );
@@ -88,17 +78,21 @@ public class DataLoad {
 
             if (root.has("trainings")) {
                 for (JsonNode t : root.get("trainings")) {
-                    gym.createTraining(
-                            t.path("traineeId").asLong(0),
-                            t.path("trainerId").asLong(0),
-                            t.path("trainingName").asText(""),
-                            t.path("trainingType").path("trainingTypeName").asText(""),
-                            java.time.LocalDate.parse(t.path("trainingDate").asText("1970-01-01")),
-                            t.path("trainingDuration").asInt(0)
+                    TrainingType type = new TrainingType(
+                            t.path("trainingType").path("trainingTypeName").asText("")
                     );
+
+                    Training training = new Training();
+                    training.setTraineeId(t.path("traineeId").asLong(0));
+                    training.setTrainerId(t.path("trainerId").asLong(0));
+                    training.setTrainingName(t.path("trainingName").asText(""));
+                    training.setTrainingType(type);
+                    training.setTrainingDate(java.time.LocalDate.parse(t.path("trainingDate").asText("1970-01-01")));
+                    training.setTrainingDuration(t.path("trainingDuration").asInt(0));
+
+                    gym.createTraining(training);
                 }
             }
-
 
             logger.info("Storage initialized from file");
 
@@ -111,5 +105,11 @@ public class DataLoad {
         }
     }
 
+    private final GymFacade gym;
+
+    @Value("${storage.file}")
+    private String storagePath;
+
+    private static final Logger logger = LoggerFactory.getLogger(LoadInitialEntities.class);
 
 }

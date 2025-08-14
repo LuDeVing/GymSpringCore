@@ -1,64 +1,47 @@
 package org.example.service;
 
-import org.example.DAO.TraineeDao;
-import org.example.DAO.TrainerDao;
-import org.example.DAO.TrainingDao;
+import org.example.DAO.GenericDao;
 import org.example.model.Trainee;
 import org.example.model.Training;
 import org.example.model.User;
-import org.example.util.UserPasswordGenerator;
+import org.example.util.UserNameCalculatorAndPasswordGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class TraineeServiceImpl implements TraineeService {
 
-    private TraineeDao traineeDao;
-    private TrainingDao trainingDao;
-    private UserPasswordGenerator userPasswordGenerator;
-    private long currentId = 0;
-
-    private static final Logger logger = LoggerFactory.getLogger(TraineeServiceImpl.class);
-
     @Autowired
-    public void setUserPasswordGenerator(UserPasswordGenerator userPasswordGenerator){
+    public void setUserPasswordGenerator(UserNameCalculatorAndPasswordGenerator userPasswordGenerator){
         this.userPasswordGenerator = userPasswordGenerator;
     }
 
     @Autowired
-    public void setTraineeDao(TraineeDao traineeDao) {
+    public void setTraineeDao(GenericDao<Trainee> traineeDao) {
         this.traineeDao = traineeDao;
     }
 
-    @Autowired
-    public void setTrainingDao(TrainingDao trainingDao) {
-        this.trainingDao = trainingDao;
-    }
-
-
     @Override
-    public void create(String firstName, String lastName, boolean isActive,
-                       LocalDate dateOfBirth, String address) {
+    public void create(User user, LocalDate date, String address) {
 
-        List<String> allUserNames = traineeDao.findAll().stream().map(User::getUsername).toList();
-
-        String userName = userPasswordGenerator.getUserName(firstName, lastName, allUserNames);
+        String userName = userPasswordGenerator.getUserName(user.getFirstName(), user.getLastName(), traineeDao);
         String password = userPasswordGenerator.generateRandomPassword();
 
-        Trainee trainee = new Trainee(++currentId, firstName, lastName, userName, password, isActive, dateOfBirth, address);
+        Trainee trainee = new Trainee(++currentId, user.getFirstName(), user.getLastName(), userName, password,
+                user.isActive(), date, address);
 
         traineeDao.create(trainee);
 
     }
 
     @Override
-    public Trainee select(Long Id) {
+    public Optional<Trainee> select(Long Id) {
         return traineeDao.select(Id);
     }
 
@@ -69,16 +52,14 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     public void delete(Long Id) {
-
-        for (Training t : trainingDao.findAll()) {
-            if (Objects.equals(t.getTraineeId(), Id)) {
-                trainingDao.delete(t.getTrainingId());
-                logger.info("Deleted Training with ID: {} for Trainee ID: {}", t.getTrainingId(), Id);
-            }
-        }
-
         traineeDao.delete(Id);
         logger.info("Deleted Trainee with ID: {}", Id);
-
     }
+
+    private GenericDao<Trainee> traineeDao;
+    private UserNameCalculatorAndPasswordGenerator userPasswordGenerator;
+    private long currentId = 0;
+
+    private static final Logger logger = LoggerFactory.getLogger(TraineeServiceImpl.class);
+
 }

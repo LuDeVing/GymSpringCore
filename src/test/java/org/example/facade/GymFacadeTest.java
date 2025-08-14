@@ -2,89 +2,108 @@ package org.example.facade;
 
 import junit.framework.TestCase;
 import org.example.DAO.*;
-import org.example.model.Trainee;
-import org.example.model.Trainer;
-import org.example.model.Training;
-import org.example.model.TrainingType;
+import org.example.model.*;
 import org.example.service.*;
+import org.example.storage.MapStorage;
 import org.example.storage.StorageSystem;
-import org.example.util.UserPasswordGenerator;
-import org.example.util.UserPasswordGeneratorImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.example.util.UserNameCalculatorAndPasswordGeneratorImpl;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.Optional;
 
 public class GymFacadeTest extends TestCase {
 
     private GymFacade gymFacade;
 
-    @BeforeEach
-    public void setUp() {
-        StorageSystem storageSystem = new StorageSystem(
-                new HashMap<>(), new HashMap<>(), new HashMap<>()
-        );
+    @Override
+    protected void setUp() {
 
-        TraineeDao traineeDao = new TraineeDaoImpl(storageSystem);
-        TrainerDao trainerDao = new TrainerDaoImpl(storageSystem);
-        TrainingDao trainingDao = new TrainingDaoImpl(storageSystem);
+        StorageSystem<Trainee> traineeStorage = new MapStorage<>();
+        StorageSystem<Trainer> trainerStorage = new MapStorage<>();
+        StorageSystem<Training> trainingStorage = new MapStorage<>();
 
-        UserPasswordGenerator userPasswordGenerator = new UserPasswordGeneratorImpl();
+        GenericDao<Trainee> traineeDao = new TraineeDaoImpl(traineeStorage);
+        GenericDao<Trainer> trainerDao = new TrainerDaoImpl(trainerStorage);
+        GenericDao<Training> trainingDao = new TrainingDaoImpl(trainingStorage);
 
         TraineeServiceImpl traineeService = new TraineeServiceImpl();
         traineeService.setTraineeDao(traineeDao);
-        traineeService.setTrainingDao(trainingDao);
-        traineeService.setUserPasswordGenerator(userPasswordGenerator);
+        traineeService.setUserPasswordGenerator(new UserNameCalculatorAndPasswordGeneratorImpl());
 
         TrainerServiceImpl trainerService = new TrainerServiceImpl();
         trainerService.setTrainerDao(trainerDao);
-        trainerService.setUserPasswordGenerator(userPasswordGenerator);
+        trainerService.setUserPasswordGenerator(new UserNameCalculatorAndPasswordGeneratorImpl());
 
         TrainingServiceImpl trainingService = new TrainingServiceImpl();
         trainingService.setTrainingDao(trainingDao);
 
         gymFacade = new GymFacadeImpl(traineeService, trainerService, trainingService);
+
+        for (int i = 1; i <= 5; i++) {
+            gymFacade.createTrainee(
+                    new User("Name" + i, "GVARI" + i, "", "", true),
+                    LocalDate.of(1990, 1, i),
+                    "Address " + i
+            );
+        }
+
+        gymFacade.createTrainer(new User("Trainer", "One", "", "", true), "MMA");
+        gymFacade.createTrainer(new User("Trainer", "Two", "", "", true), "Boxing");
+
+        gymFacade.createTraining(new Training(
+                1L,
+                1L,
+                "MMA",
+                new TrainingType("GROUP"),
+                LocalDate.of(2024, 1, 1),
+                60
+        ));
+
+        gymFacade.createTraining(new Training(
+                2L,
+                2L,
+                "Evening Boxing",
+                new TrainingType("INDIVIDUAL"),
+                LocalDate.of(2024, 1, 2),
+                45
+        ));
     }
 
-
-    @Test
     public void testSelectTrainee() {
-
-        gymFacade.createTrainee(
-                "John", "Johnson", true,
-                java.time.LocalDate.of(1990, 1, 1), "addr1"
-        );
-
-        Trainee trainee = gymFacade.selectTrainee(1L);
-
-        assertNotNull(trainee);
-        assertEquals("John", trainee.getFirstName());
-        assertEquals("Johnson", trainee.getLastName());
+        Optional<Trainee> t = gymFacade.selectTrainee(1L);
+        assertTrue(t.isPresent());
+        assertEquals("Name1", t.get().getFirstName());
+        assertEquals("GVARI1", t.get().getLastName());
     }
 
-    @Test
-    public void testCreateTrainerAndSelect() {
-        gymFacade.createTrainer("Mike", "Mika", true, "Fitness");
-
-        Trainer trainer = gymFacade.selectTrainer(1L);
-
-        assertNotNull(trainer);
-        assertEquals("Mike", trainer.getFirstName());
-        assertEquals("Mika", trainer.getLastName());
-        assertEquals("Fitness", trainer.getSpecialization());
-    }
-
-
-    @Test
     public void testUpdateTrainee() {
-        gymFacade.createTrainee("John", "Johnson", true, java.time.LocalDate.of(1990, 1, 1), "addr1");
-        Trainee trainee = gymFacade.selectTrainee(1L);
-        trainee.setFirstName("Johnny");
-        gymFacade.updateTrainee(trainee);
+        Trainee t = gymFacade.selectTrainee(2L).get();
+        t.setAddress("New Address");
+        gymFacade.updateTrainee(t);
 
-        Trainee updated = gymFacade.selectTrainee(1L);
-        assertEquals("Johnny", updated.getFirstName());
+        Trainee updated = gymFacade.selectTrainee(2L).get();
+        assertEquals("New Address", updated.getAddress());
+    }
+
+    public void testDeleteTrainee() {
+        gymFacade.deleteTrainee(3L);
+        assertFalse(gymFacade.selectTrainee(3L).isPresent());
+    }
+
+    public void testSelectTrainer() {
+        Optional<Trainer> tr = gymFacade.selectTrainer(1L);
+        assertTrue(tr.isPresent());
+        assertEquals("Trainer", tr.get().getFirstName());
+        assertEquals("MMA", tr.get().getSpecialization());
+    }
+
+    public void testUpdateTrainer() {
+        Trainer tr = gymFacade.selectTrainer(2L).get();
+        tr.setSpecialization("Kickboxing");
+        gymFacade.updateTrainer(tr);
+
+        Trainer updated = gymFacade.selectTrainer(2L).get();
+        assertEquals("Kickboxing", updated.getSpecialization());
     }
 
 

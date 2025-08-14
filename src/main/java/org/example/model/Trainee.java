@@ -3,12 +3,9 @@ package org.example.model;
 import java.time.LocalDate;
 import java.util.Date;
 
-public class Trainee extends User{
+public class Trainee extends User {
 
-    private LocalDate dateOfBirth;
-    private String address;
-    private Long userId;
-
+    public Trainee(){}
 
     public Trainee(Long userId, String firstName, String lastName, String username, String password, boolean isActive,
                    LocalDate dateOfBirth, String address) {
@@ -26,5 +23,9 @@ public class Trainee extends User{
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
+
+    private LocalDate dateOfBirth;
+    private String address;
+    private Long userId;
 
 }

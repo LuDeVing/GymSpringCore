@@ -1,9 +1,6 @@
 package org.example.facade;
 
-import org.example.model.Trainee;
-import org.example.model.Trainer;
-import org.example.model.Training;
-import org.example.model.TrainingType;
+import org.example.model.*;
 import org.example.service.TraineeService;
 import org.example.service.TrainerService;
 import org.example.service.TrainingService;
@@ -13,15 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Component
 public class GymFacadeImpl implements GymFacade {
-
-    private final TraineeService traineeService;
-    private final TrainerService trainerService;
-    private final TrainingService trainingService;
-
-    private static final Logger logger = LoggerFactory.getLogger(GymFacadeImpl.class);
 
     @Autowired
     public GymFacadeImpl(TraineeService traineeService, TrainerService trainerService, TrainingService trainingService) {
@@ -31,15 +23,15 @@ public class GymFacadeImpl implements GymFacade {
     }
 
     @Override
-    public void createTrainee(String firstName, String lastName, boolean isActive, LocalDate dateOfBirth, String address) {
-        traineeService.create(firstName, lastName, isActive, dateOfBirth, address);
-        logger.info("Created Trainee: {} {}", firstName, lastName);
+    public void createTrainee(User user, LocalDate dateOfBirth, String address) {
+        traineeService.create(user, dateOfBirth, address);
+        logger.info("Created Trainee: {} {}", user.getFirstName(), user.getLastName());
     }
 
     @Override
-    public Trainee selectTrainee(Long id) {
-        Trainee trainee = traineeService.select(id);
-        if (trainee == null) {
+    public Optional<Trainee> selectTrainee(Long id) {
+        Optional<Trainee> trainee = traineeService.select(id);
+        if (trainee.isEmpty()) {
             logger.warn("Trainee with ID {} not found.", id);
         } else {
             logger.info("Selected Trainee with ID: {}", id);
@@ -60,15 +52,15 @@ public class GymFacadeImpl implements GymFacade {
     }
 
     @Override
-    public void createTrainer(String firstName, String lastName, boolean isActive, String specialization) {
-        trainerService.create(firstName, lastName, isActive, specialization);
-        logger.info("Created Trainer: {} {}", firstName, lastName);
+    public void createTrainer(User user, String specialization) {
+        trainerService.create(user, specialization);
+        logger.info("Created Trainer: {} {}", user.getFirstName(), user.getLastName());
     }
 
     @Override
-    public Trainer selectTrainer(Long id) {
-        Trainer trainer = trainerService.select(id);
-        if (trainer == null) {
+    public Optional<Trainer> selectTrainer(Long id) {
+        Optional<Trainer> trainer = trainerService.select(id);
+        if (trainer.isEmpty()) {
             logger.warn("Trainer with ID {} not found.", id);
         } else {
             logger.info("Selected Trainer with ID: {}", id);
@@ -83,22 +75,30 @@ public class GymFacadeImpl implements GymFacade {
     }
 
     @Override
-    public void createTraining(Long traineeId, Long trainerId, String trainingName, String trainingTypeName, LocalDate trainingDate, int trainingDuration) {
-        trainingService.create(traineeId, trainerId, trainingName, trainingTypeName, trainingDate, trainingDuration);
-        logger.info("Created Training '{}' for Trainee ID {} and Trainer ID {}", trainingName, traineeId, trainerId);
+    public void createTraining(Training training) {
+        trainingService.create(training);
+        logger.info("Created Training '{}' for Trainee ID {} and Trainer ID {}",
+                training.getTrainingName(), training.getTraineeId(), training.getTrainerId());
     }
 
     @Override
-    public Training selectTraining(Long traineeId, Long trainerId, LocalDate date, TrainingType trainingType) {
+    public Optional<Training> selectTraining(Long traineeId, Long trainerId, LocalDate date, TrainingType trainingType) {
 
         Long id = Training.calculateId(traineeId, trainerId, date, trainingType);
 
-        Training training = trainingService.select(id);
-        if (training == null) {
+        Optional<Training> training = trainingService.select(id);
+        if (training.isEmpty()) {
             logger.warn("Training with ID {} not found.", id);
         } else {
             logger.info("Selected Training with ID: {}", id);
         }
         return training;
     }
+
+    private final TraineeService traineeService;
+    private final TrainerService trainerService;
+    private final TrainingService trainingService;
+
+    private static final Logger logger = LoggerFactory.getLogger(GymFacadeImpl.class);
+
 }

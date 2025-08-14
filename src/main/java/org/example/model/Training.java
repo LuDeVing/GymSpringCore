@@ -4,12 +4,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class Training {
-    private Long traineeId;
-    private Long trainerId;
-    private String trainingName;
-    private TrainingType trainingType;
-    private LocalDate trainingDate;
-    private int trainingDuration;
 
     public Training() {}
 
@@ -47,4 +41,12 @@ public class Training {
 
     public int getTrainingDuration() { return trainingDuration; }
     public void setTrainingDuration(int trainingDuration) { this.trainingDuration = trainingDuration; }
+
+    private Long traineeId;
+    private Long trainerId;
+    private String trainingName;
+    private TrainingType trainingType;
+    private LocalDate trainingDate;
+    private int trainingDuration;
+
 }
