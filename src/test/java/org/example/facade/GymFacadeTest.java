@@ -6,7 +6,8 @@ import org.example.model.*;
 import org.example.service.*;
 import org.example.storage.MapStorage;
 import org.example.storage.StorageSystem;
-import org.example.util.UserNameCalculatorAndPasswordGeneratorImpl;
+import org.example.util.PasswordGeneratorImpl;
+import org.example.util.UserNameCalculatorImpl;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -26,16 +27,13 @@ public class GymFacadeTest extends TestCase {
         GenericDao<Trainer> trainerDao = new TrainerDaoImpl(trainerStorage);
         GenericDao<Training> trainingDao = new TrainingDaoImpl(trainingStorage);
 
-        TraineeServiceImpl traineeService = new TraineeServiceImpl();
-        traineeService.setTraineeDao(traineeDao);
-        traineeService.setUserPasswordGenerator(new UserNameCalculatorAndPasswordGeneratorImpl());
+        TraineeServiceImpl traineeService = new TraineeServiceImpl(traineeDao,
+                new UserNameCalculatorImpl(), new PasswordGeneratorImpl());
 
-        TrainerServiceImpl trainerService = new TrainerServiceImpl();
-        trainerService.setTrainerDao(trainerDao);
-        trainerService.setUserPasswordGenerator(new UserNameCalculatorAndPasswordGeneratorImpl());
+        TrainerServiceImpl trainerService = new TrainerServiceImpl(trainerDao,
+                new UserNameCalculatorImpl(), new PasswordGeneratorImpl());
 
-        TrainingServiceImpl trainingService = new TrainingServiceImpl();
-        trainingService.setTrainingDao(trainingDao);
+        TrainingServiceImpl trainingService = new TrainingServiceImpl(trainingDao);
 
         gymFacade = new GymFacadeImpl(traineeService, trainerService, trainingService);
 

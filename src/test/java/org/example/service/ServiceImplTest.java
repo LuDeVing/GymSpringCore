@@ -6,7 +6,8 @@ import org.example.DAO.TraineeDaoImpl;
 import org.example.model.*;
 import org.example.storage.MapStorage;
 import org.example.storage.StorageSystem;
-import org.example.util.UserNameCalculatorAndPasswordGeneratorImpl;
+import org.example.util.PasswordGeneratorImpl;
+import org.example.util.UserNameCalculatorImpl;
 
 import java.time.LocalDate;
 
@@ -23,9 +24,7 @@ public class ServiceImplTest extends TestCase {
 
         GenericDao<Trainee> trainees = new TraineeDaoImpl(traineeStorageSystem);
 
-        traineeService = new TraineeServiceImpl();
-        traineeService.setTraineeDao(trainees);
-        traineeService.setUserPasswordGenerator(new UserNameCalculatorAndPasswordGeneratorImpl());
+        traineeService = new TraineeServiceImpl(trainees, new UserNameCalculatorImpl(), new PasswordGeneratorImpl());
 
         User user1 = new User("Name", "Gvari", "", "", true);
         User user2 = new User("Name", "Gvari", "", "", true);

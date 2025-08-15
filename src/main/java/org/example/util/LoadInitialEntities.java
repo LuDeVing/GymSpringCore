@@ -21,6 +21,12 @@ import java.io.InputStream;
 @Component
 public class LoadInitialEntities {
 
+    private static final Logger logger = LoggerFactory.getLogger(LoadInitialEntities.class);
+    private final GymFacade gym;
+
+    @Value("${storage.file}")
+    private String storagePath;
+
     @Autowired
     public LoadInitialEntities(GymFacade gym){
         this.gym = gym;
@@ -104,12 +110,5 @@ public class LoadInitialEntities {
             }
         }
     }
-
-    private final GymFacade gym;
-
-    @Value("${storage.file}")
-    private String storagePath;
-
-    private static final Logger logger = LoggerFactory.getLogger(LoadInitialEntities.class);
 
 }

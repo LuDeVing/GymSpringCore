@@ -4,14 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 @Component
 public class MapStorage<T> implements StorageSystem<T> {
+
+    private static final Logger logger = LoggerFactory.getLogger(MapStorage.class);
+    private final ConcurrentHashMap<Long, T> map = new ConcurrentHashMap<>();
 
     public Optional<T> findById(Long id) {
         T value = map.get(id);
@@ -45,7 +46,7 @@ public class MapStorage<T> implements StorageSystem<T> {
 
     @Override
     public boolean existsMatching(Predicate<T> predicate) {
-        for(T value : map.values()){
+        for (T value : map.values()) {
             if (predicate.test(value))
                 return true;
         }
@@ -60,10 +61,4 @@ public class MapStorage<T> implements StorageSystem<T> {
             logger.warn("Entity with ID {} not found for deletion.", id);
         }
     }
-
-
-
-    protected final ConcurrentHashMap<Long, T> map = new ConcurrentHashMap<>();
-    private static final Logger logger = LoggerFactory.getLogger(MapStorage.class);
-
 }

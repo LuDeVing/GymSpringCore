@@ -2,6 +2,8 @@ package org.example.model;
 
 public class TrainingType {
 
+    private String trainingTypeName;
+
     public TrainingType() {}
 
     public TrainingType(String trainingTypeName) {
@@ -10,7 +12,5 @@ public class TrainingType {
 
     public String getTrainingTypeName() { return trainingTypeName; }
     public void setTrainingTypeName(String trainingTypeName) { this.trainingTypeName = trainingTypeName; }
-
-    private String trainingTypeName;
 
 }

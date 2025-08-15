@@ -9,5 +9,4 @@ public interface GenericDao<T> {
     void update(T entity);
     void delete(Long id);
     boolean existsMatching(Predicate<T> predicate);
-
 }

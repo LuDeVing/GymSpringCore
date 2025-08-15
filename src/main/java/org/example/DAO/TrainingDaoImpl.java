@@ -14,6 +14,8 @@ import java.util.function.Predicate;
 @Repository
 public class TrainingDaoImpl implements GenericDao<Training> {
 
+    private final StorageSystem<Training> trainings;
+
     @Autowired
     public TrainingDaoImpl(StorageSystem<Training> trainings) {
         this.trainings = trainings;
@@ -43,7 +45,5 @@ public class TrainingDaoImpl implements GenericDao<Training> {
     public boolean existsMatching(Predicate<Training> predicate) {
         return trainings.existsMatching(predicate);
     }
-
-    private final StorageSystem<Training> trainings;
 
 }

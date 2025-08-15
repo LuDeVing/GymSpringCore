@@ -15,6 +15,12 @@ import java.util.Optional;
 @Component
 public class GymFacadeImpl implements GymFacade {
 
+    private static final Logger logger = LoggerFactory.getLogger(GymFacadeImpl.class);
+
+    private final TraineeService traineeService;
+    private final TrainerService trainerService;
+    private final TrainingService trainingService;
+
     @Autowired
     public GymFacadeImpl(TraineeService traineeService, TrainerService trainerService, TrainingService trainingService) {
         this.traineeService = traineeService;
@@ -94,11 +100,5 @@ public class GymFacadeImpl implements GymFacade {
         }
         return training;
     }
-
-    private final TraineeService traineeService;
-    private final TrainerService trainerService;
-    private final TrainingService trainingService;
-
-    private static final Logger logger = LoggerFactory.getLogger(GymFacadeImpl.class);
 
 }

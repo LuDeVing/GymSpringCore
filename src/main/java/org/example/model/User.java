@@ -2,6 +2,12 @@ package org.example.model;
 
 public class User {
 
+    private String firstName;
+    private String lastName;
+    private String username;
+    private String password;
+    private boolean isActive;
+
     public User() {}
 
     public User(String firstName, String lastName, String username, String password, boolean isActive) {
@@ -26,11 +32,5 @@ public class User {
 
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
-
-    private String firstName;
-    private String lastName;
-    private String username;
-    private String password;
-    private boolean isActive;
 
 }
